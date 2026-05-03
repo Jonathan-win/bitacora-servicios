@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Bitácora Servicios — Softys</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0f1117;
+  --bg2: #161b25;
+  --bg3: #1e2535;
+  --border: #2a3347;
+  --border2: #3a4a66;
+  --text: #e8edf5;
+  --text2: #8a9bb8;
+  --text3: #4a5c7a;
+  --accent: #4f8ef7;
+  --accent2: #1a3a6e;
+  --green: #2ecc8a;
+  --green2: #0d3d28;
+  --orange: #f5924e;
+  --orange2: #3d2010;
+  --red: #f05c5c;
+  --red2: #3d1010;
+  --purple: #a78bfa;
+  --purple2: #2d1f4e;
+  --yellow: #f5c842;
+  --yellow2: #3d3010;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; min-height: 100vh; }
+
+/* layout */
+.shell { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+.sidebar { background: var(--bg2); border-right: 1px solid var(--border); padding: 0; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+.main { padding: 2rem 2rem; max-width: 860px; }
+
+/* sidebar */
+.logo { padding: 1.5rem 1.25rem 1rem; border-bottom: 1px solid var(--border); }
+.logo-title { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--accent); letter-spacing: .05em; }
+.logo-sub { font-size: 11px; color: var(--text3); margin-top: 3px; }
+.nav-section { padding: .75rem 1.25rem .25rem; font-size: 10px; font-family: var(--mono); letter-spacing: .1em; color: var(--text3); text-transform: uppercase; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: .6rem 1.25rem; cursor: pointer; font-size: 13px; color: var(--text2); border-left: 2px solid transparent; transition: all .15s; }
+.nav-item:hover { background: var(--bg3); color: var(--text); }
+.nav-item.active { background: var(--bg3); color: var(--accent); border-left-color: var(--accent); }
+.nav-icon { font-size: 15px; width: 18px; text-align: center; }
+.sidebar-footer { margin-top: auto; padding: 1rem 1.25rem; border-top: 1px solid var(--border); font-size: 11px; color: var(--text3); font-family: var(--mono); }
+
+/* page header */
+.page-header { margin-bottom: 1.75rem; }
+.page-title { font-size: 22px; font-weight: 300; color: var(--text); letter-spacing: -.01em; }
+.page-title span { color: var(--accent); font-weight: 500; }
+.page-sub { font-size: 12px; color: var(--text3); margin-top: 4px; font-family: var(--mono); }
+
+/* cards */
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem; }
+.card-label { font-size: 10px; font-family: var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--text3); margin-bottom: 12px; }
+
+/* grid */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.g4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 10px; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+
+/* form controls */
+input, select, textarea {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 5px;
+  color: var(--text); font-family: var(--sans); font-size: 13px; padding: 7px 10px; width: 100%;
+  outline: none; transition: border-color .15s;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+textarea { resize: vertical; min-height: 70px; }
+select option { background: var(--bg3); }
+
+/* buttons */
+.btn { font-size: 12px; font-family: var(--mono); font-weight: 500; padding: 7px 14px; border-radius: 5px; cursor: pointer; border: 1px solid var(--border2); background: var(--bg3); color: var(--text2); letter-spacing: .03em; transition: all .15s; }
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+.btn-accent { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn-accent:hover { background: #3a7ae8; border-color: #3a7ae8; color: #fff; }
+.btn-green { background: var(--green); color: #000; border-color: var(--green); font-weight: 500; }
+.btn-green:hover { background: #25b578; }
+.btn-full { width: 100%; padding: 10px; font-size: 13px; }
+.btn-sm { font-size: 11px; padding: 4px 10px; }
+.btn-ghost { background: transparent; border-color: transparent; color: var(--text3); }
+.btn-ghost:hover { color: var(--red); border-color: transparent; background: transparent; }
+
+/* badges */
+.badge { display: inline-block; font-size: 10px; font-family: var(--mono); font-weight: 500; padding: 2px 8px; border-radius: 3px; letter-spacing: .04em; }
+.b-prog { background: var(--accent2); color: var(--accent); }
+.b-corr { background: var(--red2); color: var(--red); }
+.b-insp { background: var(--green2); color: var(--green); }
+.b-apo  { background: var(--orange2); color: var(--orange); }
+.b-ok   { background: var(--green2); color: var(--green); }
+.b-pend { background: var(--yellow2); color: var(--yellow); }
+.b-obs  { background: var(--orange2); color: var(--orange); }
+.b-lila { background: var(--purple2); color: var(--purple); }
+
+/* tabs */
+.tabs { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
+.tab { font-size: 11px; font-family: var(--mono); padding: 5px 12px; border-radius: 4px; border: 1px solid var(--border); background: transparent; color: var(--text3); cursor: pointer; transition: all .15s; }
+.tab:hover { border-color: var(--border2); color: var(--text2); }
+.tab.active { background: var(--accent2); color: var(--accent); border-color: var(--accent); }
+
+/* activity items */
+.act-item { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; margin-bottom: 6px; display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: start; }
+.act-body { font-size: 13px; line-height: 1.55; color: var(--text); }
+.act-meta { font-size: 11px; color: var(--text3); margin-top: 4px; font-family: var(--mono); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+/* add form */
+.af { background: var(--bg); border: 1px dashed var(--border2); border-radius: 6px; padding: 12px; margin-top: 10px; }
+
+/* week pills */
+.week-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.day-pill { font-size: 11px; font-family: var(--mono); padding: 5px 14px; border-radius: 4px; border: 1px solid var(--border); background: transparent; color: var(--text3); cursor: pointer; transition: all .15s; }
+.day-pill:hover { border-color: var(--border2); color: var(--text2); }
+.day-pill.active { background: var(--accent2); color: var(--accent); border-color: var(--accent); }
+.day-pill.has-data { border-color: var(--green); color: var(--green); }
+.day-pill.has-data.active { background: var(--green2); }
+
+/* rutina item */
+.rut-item { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+.rut-item:last-child { border-bottom: none; }
+.rut-check { width: 15px; height: 15px; margin-top: 2px; flex-shrink: 0; cursor: pointer; accent-color: var(--green); }
+.rut-body { flex: 1; }
+.rut-title { font-size: 13px; color: var(--text); line-height: 1.4; }
+.rut-eq { font-size: 11px; color: var(--text3); font-family: var(--mono); margin-top: 2px; }
+.rut-done .rut-title { text-decoration: line-through; opacity: .4; }
+
+/* stat cards */
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px,1fr)); gap: 8px; margin-bottom: 1.25rem; }
+.stat { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 12px; }
+.stat-n { font-size: 28px; font-weight: 300; font-family: var(--mono); color: var(--accent); }
+.stat-l { font-size: 11px; color: var(--text3); margin-top: 3px; }
+
+/* hist items */
+.hist-item { padding: 12px 0; border-bottom: 1px solid var(--border); cursor: pointer; transition: all .15s; }
+.hist-item:last-child { border-bottom: none; }
+.hist-item:hover .hist-title { color: var(--accent); }
+.hist-title { font-size: 13px; font-weight: 500; color: var(--text); font-family: var(--mono); }
+.hist-meta { font-size: 11px; color: var(--text3); margin-top: 3px; }
+.hist-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+
+/* output */
+.out-box { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 14px; font-size: 12px; font-family: var(--mono); color: var(--text2); line-height: 1.9; white-space: pre-wrap; word-break: break-word; min-height: 100px; margin-bottom: 10px; }
+
+/* params */
+.param-section { margin-bottom: 14px; }
+.param-label { font-size: 11px; font-family: var(--mono); color: var(--text3); margin-bottom: 6px; letter-spacing: .05em; }
+.param-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px,1fr)); gap: 8px; }
+.param-grid input, .param-grid select { font-size: 12px; text-align: center; }
+
+/* loading / status */
+.status-bar { font-size: 11px; font-family: var(--mono); color: var(--text3); padding: 6px 0; display: flex; align-items: center; gap: 8px; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text3); flex-shrink: 0; }
+.dot.ok { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.dot.err { background: var(--red); }
+.dot.loading { background: var(--yellow); animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* toast */
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--bg2); border: 1px solid var(--border2); color: var(--text); padding: 10px 22px; border-radius: 6px; font-size: 12px; font-family: var(--mono); opacity: 0; transition: opacity .25s; pointer-events: none; z-index: 9999; white-space: nowrap; }
+.toast.show { opacity: 1; }
+
+/* section toggle */
+.sec { display: none; }
+.sec.active { display: block; }
+
+.empty { font-size: 12px; color: var(--text3); font-family: var(--mono); padding: 8px 0; font-style: italic; }
+.divider { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
+.pend-row { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; font-size: 13px; }
+.pend-row span { flex: 1; color: var(--text2); }
+
+@media (max-width: 700px) {
+  .shell { grid-template-columns: 1fr; }
+  .sidebar { position: static; height: auto; flex-direction: row; flex-wrap: wrap; }
+  .logo { padding: 1rem; }
+  .nav-item { padding: .5rem .75rem; font-size: 12px; }
+  .main { padding: 1rem; }
+  .g2, .g3, .g4 { grid-template-columns: 1fr; }
+  .stat-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-title">SOFTYS · SERVICIOS</div>
+    <div class="logo-sub">Bitácora eléctrica · MP3</div>
+  </div>
+  <div class="nav-section">Turnos</div>
+  <div class="nav-item active" onclick="goTo('hoy',this)" data-sec="hoy">
+    <span class="nav-icon">◈</span> Turno de hoy
+  </div>
+  <div class="nav-item" onclick="goTo('params',this)" data-sec="params">
+    <span class="nav-icon">◎</span> Parámetros
+  </div>
+  <div class="nav-section">Planificación</div>
+  <div class="nav-item" onclick="goTo('rutina',this)" data-sec="rutina">
+    <span class="nav-icon">▦</span> Rutina semanal
+  </div>
+  <div class="nav-section">Datos</div>
+  <div class="nav-item" onclick="goTo('hist',this)" data-sec="hist">
+    <span class="nav-icon">▤</span> Historial
+  </div>
+  <div class="nav-item" onclick="goTo('reporte',this)" data-sec="reporte">
+    <span class="nav-icon">▷</span> Reporte WhatsApp
+  </div>
+  <div class="sidebar-footer">
+    <div id="conn-status" class="status-bar"><span class="dot loading" id="conn-dot"></span><span id="conn-text">conectando...</span></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- ===== HOY ===== -->
+<div id="sec-hoy" class="sec active">
+  <div class="page-header">
+    <div class="page-title">Turno de <span>hoy</span></div>
+    <div class="page-sub" id="hoy-fecha-label">—</div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Datos del turno</div>
+    <div class="g3">
+      <div class="field"><label>Técnico</label><input id="t-tec" value="Jonathan"/></div>
+      <div class="field"><label>Fecha</label><input type="date" id="t-fecha"/></div>
+      <div class="field"><label>Turno</label>
+        <select id="t-turno">
+          <option>Día (07:00–17:00)</option>
+          <option>Día viernes (07:00–15:00)</option>
+          <option>Turno especial</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Trabajo en equipo con</label><input id="t-comp" placeholder="Nombre del compañero (opcional)"/></div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Tareas programadas para hoy</div>
+    <div id="hoy-prog"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Actividades registradas</div>
+    <div class="tabs">
+      <div class="tab active" onclick="setTab('todos',this)">Todas</div>
+      <div class="tab" onclick="setTab('prog',this)">Programadas</div>
+      <div class="tab" onclick="setTab('corr',this)">Correctivos</div>
+      <div class="tab" onclick="setTab('insp',this)">Inspecciones</div>
+      <div class="tab" onclick="setTab('apo',this)">Apoyo</div>
+    </div>
+    <div id="act-list"></div>
+    <div class="af">
+      <div class="g2">
+        <div class="field"><label>Tipo</label>
+          <select id="a-tipo">
+            <option value="prog">Programado</option>
+            <option value="corr">Correctivo</option>
+            <option value="insp">Inspección</option>
+            <option value="apo">Apoyo a otra área</option>
+          </select>
+        </div>
+        <div class="field"><label>Equipo / Sistema</label>
+          <select id="a-eq">
+            <option value="">— Seleccionar —</option>
+            <option>Pozo profundo 1</option><option>Pozo profundo 2</option>
+            <option>Torre de enfriamiento 1</option><option>Torre de enfriamiento 2</option><option>Torre de enfriamiento 3</option>
+            <option>Krofta 1</option><option>Krofta 2</option><option>Krofta 4</option>
+            <option>Prensa de lodos 1</option><option>Prensa de lodos 2</option><option>Prensa de lodos 3</option>
+            <option>PTAR</option><option>Compresor</option>
+            <option>Caldera 2</option><option>Caldera 3</option><option>Caldera 4</option>
+            <option>Grupo electrógeno</option><option>Eje portabobinas</option>
+            <option>General / Planta</option><option value="otro">Otro...</option>
+          </select>
+        </div>
+      </div>
+      <div class="field" id="a-otro-wrap" style="display:none;margin-bottom:8px;"><label>Especificar equipo</label><input id="a-eq-otro" placeholder="TAG o nombre del equipo..."/></div>
+      <div class="field" style="margin-bottom:8px;"><label>Descripción</label>
+        <textarea id="a-desc" placeholder="Qué se hizo, condición encontrada, resultado..."></textarea>
+      </div>
+      <div class="g2">
+        <div class="field"><label>Estado al término</label>
+          <select id="a-est">
+            <option value="ok">Operativo ✓</option>
+            <option value="pend">Pendiente / Siguiente turno</option>
+            <option value="obs">Con observación</option>
+            <option value="lila">Se deja en LILA</option>
+          </select>
+        </div>
+        <div class="field" style="justify-content:flex-end;">
+          <button class="btn btn-accent" style="margin-top:16px;" onclick="addAct()">+ Agregar actividad</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Pendientes para siguiente turno</div>
+    <div id="pend-list"></div>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <input id="npend" placeholder="Tarea pendiente o alerta..." onkeydown="if(event.key==='Enter')addPend()"/>
+      <button class="btn" onclick="addPend()">+</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Observaciones generales</div>
+    <textarea id="t-obs" placeholder="Novedades, coordinaciones con operaciones, alertas de equipos..."></textarea>
+  </div>
+
+  <div style="display:flex;gap:8px;">
+    <button class="btn btn-green btn-full" onclick="saveDay()">Guardar turno en historial</button>
+  </div>
+</div>
+
+<!-- ===== PARÁMETROS ===== -->
+<div id="sec-params" class="sec">
+  <div class="page-header">
+    <div class="page-title">Parámetros <span>operativos</span></div>
+    <div class="page-sub">Calderas y compresores — registrar solo valores tomados en el turno</div>
+  </div>
+  <div class="card">
+    <div class="param-section">
+      <div class="param-label">// CALDERA 2</div>
+      <div class="param-grid">
+        <div class="field"><label>Presión vapor (bar)</label><input id="c2p" placeholder="—"/></div>
+        <div class="field"><label>Temp. gases (°C)</label><input id="c2t" placeholder="—"/></div>
+        <div class="field"><label>Nivel agua (%)</label><input id="c2n" placeholder="—"/></div>
+        <div class="field"><label>Estado</label><select id="c2e"><option value="">—</option><option>Operativa</option><option>Parada</option><option>Stand-by</option></select></div>
+      </div>
+    </div>
+    <hr class="divider"/>
+    <div class="param-section">
+      <div class="param-label">// CALDERA 3</div>
+      <div class="param-grid">
+        <div class="field"><label>Presión vapor (bar)</label><input id="c3p" placeholder="—"/></div>
+        <div class="field"><label>Temp. gases (°C)</label><input id="c3t" placeholder="—"/></div>
+        <div class="field"><label>Nivel agua (%)</label><input id="c3n" placeholder="—"/></div>
+        <div class="field"><label>Estado</label><select id="c3e"><option value="">—</option><option>Operativa</option><option>Parada</option><option>Stand-by</option></select></div>
+      </div>
+    </div>
+    <hr class="divider"/>
+    <div class="param-section">
+      <div class="param-label">// CALDERA 4</div>
+      <div class="param-grid">
+        <div class="field"><label>Presión vapor (bar)</label><input id="c4p" placeholder="—"/></div>
+        <div class="field"><label>Temp. gases (°C)</label><input id="c4t" placeholder="—"/></div>
+        <div class="field"><label>Nivel agua (%)</label><input id="c4n" placeholder="—"/></div>
+        <div class="field"><label>Estado</label><select id="c4e"><option value="">—</option><option>Operativa</option><option>Parada</option><option>Stand-by</option></select></div>
+      </div>
+    </div>
+    <hr class="divider"/>
+    <div class="param-section">
+      <div class="param-label">// COMPRESORES</div>
+      <div class="param-grid">
+        <div class="field"><label>Presión línea (bar)</label><input id="cpp" placeholder="—"/></div>
+        <div class="field"><label>Temp. descarga (°C)</label><input id="cpt" placeholder="—"/></div>
+        <div class="field"><label>Horas operación</label><input id="cph" placeholder="—"/></div>
+        <div class="field"><label>Estado</label><select id="cpe"><option value="">—</option><option>Operativo</option><option>Parado</option><option>Stand-by</option></select></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== RUTINA ===== -->
+<div id="sec-rutina" class="sec">
+  <div class="page-header">
+    <div class="page-title">Rutina <span>semanal</span></div>
+    <div class="page-sub">Carga aquí las tareas programadas que te asignen cada lunes</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Semana</div>
+    <div class="g2" style="margin-bottom:12px;">
+      <div class="field"><label>Inicio (lunes)</label><input type="date" id="r-ini"/></div>
+      <div class="field"><label>Fin (viernes)</label><input type="date" id="r-fin" readonly style="opacity:.5;"/></div>
+    </div>
+    <div class="week-pills" id="week-pills"></div>
+    <div id="rut-content"></div>
+    <div class="af" style="margin-top:12px;">
+      <div class="g2">
+        <div class="field"><label>Día</label>
+          <select id="r-dia"><option value="0">Lunes</option><option value="1">Martes</option><option value="2">Miércoles</option><option value="3">Jueves</option><option value="4">Viernes</option></select>
+        </div>
+        <div class="field"><label>Equipo</label>
+          <select id="r-eq">
+            <option value="">— Seleccionar —</option>
+            <option>Pozo profundo 1</option><option>Pozo profundo 2</option>
+            <option>Torre de enfriamiento 1</option><option>Torre de enfriamiento 2</option><option>Torre de enfriamiento 3</option>
+            <option>Krofta 1</option><option>Krofta 2</option><option>Krofta 4</option>
+            <option>Prensa de lodos 1</option><option>Prensa de lodos 2</option><option>Prensa de lodos 3</option>
+            <option>PTAR</option><option>Compresor</option>
+            <option>Caldera 2</option><option>Caldera 3</option><option>Caldera 4</option>
+            <option>Grupo electrógeno</option><option>Eje portabobinas</option><option>General / Planta</option>
+          </select>
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:8px;"><label>Descripción de la tarea</label>
+        <textarea id="r-desc" rows="2" placeholder="Qué hay que hacer en este equipo..."></textarea>
+      </div>
+      <button class="btn btn-accent" onclick="addRutina()">+ Agregar tarea</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== HISTORIAL ===== -->
+<div id="sec-hist" class="sec">
+  <div class="page-header">
+    <div class="page-title">Historial <span>de turnos</span></div>
+    <div class="page-sub">Todos los días registrados — haz clic en uno para ver el reporte</div>
+  </div>
+  <div class="stat-grid" id="stats"></div>
+  <div class="card">
+    <div class="card-label">Registros</div>
+    <div id="hist-list"><p class="empty">Sin registros aún. Guarda tu primer turno desde "Turno de hoy".</p></div>
+  </div>
+</div>
+
+<!-- ===== REPORTE ===== -->
+<div id="sec-reporte" class="sec">
+  <div class="page-header">
+    <div class="page-title">Reporte <span>WhatsApp</span></div>
+    <div class="page-sub">Genera el texto del turno actual listo para copiar</div>
+  </div>
+  <div class="card">
+    <div class="out-box" id="out-box">Registra actividades en "Turno de hoy" para generar el reporte...</div>
+    <button class="btn btn-green btn-full" onclick="copyReport()">Copiar al portapapeles</button>
+  </div>
+</div>
+
+</main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbxYoiDe1JPtPadanT_6kRsJjiiB6QqnyhozteeDWeUtC3hE-aRZgc2nK2vsn4jR65aOnw/exec';
+
+let acts = [], pends = [], rutina = {}, historial = [], tabActivo = 'todos', viewDay = 0;
+
+const DIAS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
+const TL = {prog:'PROG',corr:'CORREC',insp:'INSP',apo:'APOYO'};
+const TFull = {prog:'Programado',corr:'Correctivo',insp:'Inspección',apo:'Apoyo'};
+const TB = {prog:'b-prog',corr:'b-corr',insp:'b-insp',apo:'b-apo'};
+const EL = {ok:'Operativo',pend:'Pendiente sig. turno',obs:'Con observación',lila:'Se deja en LILA'};
+const EB = {ok:'b-ok',pend:'b-pend',obs:'b-obs',lila:'b-lila'};
+
+// ---- API ----
+async function apiCall(params) {
+  const url = new URL(API);
+  Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, typeof v === 'object' ? JSON.stringify(v) : v));
+  try {
+    const r = await fetch(url.toString());
+    return await r.json();
+  } catch(e) { return {ok:false,error:e.message}; }
+}
+
+function setConnStatus(state, msg) {
+  const dot = document.getElementById('conn-dot');
+  const txt = document.getElementById('conn-text');
+  dot.className = 'dot ' + state;
+  txt.textContent = msg;
+}
+
+// ---- INIT ----
+async function init() {
+  setTodayDate();
+  setWeekDates();
+  setConnStatus('loading','cargando datos...');
+  try {
+    const [rh, rr] = await Promise.all([
+      apiCall({action:'getRegistros'}),
+      apiCall({action:'getRutina'})
+    ]);
+    if (rh.ok) historial = Array.isArray(rh.data) ? rh.data : [];
+    if (rr.ok) rutina = rr.data || {};
+    setConnStatus('ok','sheets conectado');
+  } catch(e) {
+    setConnStatus('err','sin conexión');
+  }
+  renderAll();
+}
+
+function setTodayDate() {
+  const h = new Date();
+  document.getElementById('t-fecha').value = fmtISO(h);
+  document.getElementById('hoy-fecha-label').textContent = fmtDisplay(fmtISO(h)) + ' — ' + DIAS[Math.min(h.getDay()-1,4)];
+}
+
+function setWeekDates() {
+  const h = new Date();
+  const diff = h.getDay()===0 ? -6 : 1-h.getDay();
+  const lun = new Date(h); lun.setDate(h.getDate()+diff);
+  const vie = new Date(lun); vie.setDate(lun.getDate()+4);
+  document.getElementById('r-ini').value = fmtISO(lun);
+  document.getElementById('r-fin').value = fmtISO(vie);
+}
+
+function fmtISO(d) { return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function fmtDisplay(v) { if(!v)return''; const[y,m,d]=v.split('-'); return d+'/'+m+'/'+y; }
+function gv(id) { const el=document.getElementById(id); return el?el.value.trim():''; }
+
+function renderAll() {
+  renderActList(); renderPendList(); renderHoyProg();
+  genReport(); renderWeekPills(); renderWeekContent(); renderHist();
+}
+
+// ---- NAV ----
+function goTo(sec, el) {
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+sec).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+  if(sec==='hist') renderHist();
+  if(sec==='reporte') genReport();
+}
+
+// ---- ACTIVIDADES ----
+document.getElementById('a-eq').addEventListener('change', function() {
+  document.getElementById('a-otro-wrap').style.display = this.value==='otro'?'block':'none';
+});
+
+function addAct() {
+  const tipo = gv('a-tipo') || 'prog';
+  const eqSel = document.getElementById('a-eq').value;
+  const eq = eqSel==='otro' ? gv('a-eq-otro') : eqSel;
+  const desc = gv('a-desc');
+  const est = gv('a-est') || 'ok';
+  if(!desc){document.getElementById('a-desc').focus();return;}
+  acts.push({tipo,eq,desc,est,id:Date.now()});
+  document.getElementById('a-desc').value='';
+  renderActList(); genReport();
+}
+
+function delAct(id) { acts=acts.filter(a=>a.id!==id); renderActList(); genReport(); }
+
+function setTab(t,el) {
+  tabActivo=t;
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  renderActList();
+}
+
+function renderActList() {
+  const l = document.getElementById('act-list');
+  const filtered = tabActivo==='todos' ? acts : acts.filter(a=>a.tipo===tabActivo);
+  if(!filtered.length){l.innerHTML='<p class="empty">Sin actividades'+(tabActivo!=='todos'?' de este tipo':'')+' aún.</p>';return;}
+  l.innerHTML = filtered.map(a=>`
+    <div class="act-item">
+      <span class="badge ${TB[a.tipo]}">${TL[a.tipo]}</span>
+      <div>
+        <div class="act-body">${a.desc}</div>
+        <div class="act-meta">${a.eq?'<span>'+a.eq+'</span>':''}<span class="badge ${EB[a.est]}">${EL[a.est]}</span></div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="delAct(${a.id})">✕</button>
+    </div>`).join('');
+}
+
+// ---- PENDIENTES ----
+function addPend() {
+  const v=gv('npend'); if(!v)return;
+  pends.push({t:v,id:Date.now()});
+  document.getElementById('npend').value='';
+  renderPendList(); genReport();
+}
+function delPend(id) { pends=pends.filter(p=>p.id!==id); renderPendList(); genReport(); }
+function renderPendList() {
+  const l=document.getElementById('pend-list');
+  if(!pends.length){l.innerHTML='';return;}
+  l.innerHTML=pends.map(p=>`<div class="pend-row"><span>· ${p.t}</span><button class="btn btn-ghost btn-sm" onclick="delPend(${p.id})">✕</button></div>`).join('');
+}
+
+// ---- HOYP PROG ----
+function renderHoyProg() {
+  const fecha=gv('t-fecha'); if(!fecha)return;
+  const d=new Date(fecha+'T12:00:00');
+  const dow=d.getDay(); const dayIdx=dow===0?6:dow-1;
+  const semKey=gv('r-ini');
+  const tareas=((rutina[semKey]||{})[dayIdx])||[];
+  const l=document.getElementById('hoy-prog');
+  if(!tareas.length){l.innerHTML='<p class="empty">No hay tareas programadas para hoy. Carga la rutina semanal.</p>';return;}
+  l.innerHTML=tareas.map((t,i)=>`
+    <div class="rut-item">
+      <input type="checkbox" class="rut-check" ${t.done?'checked':''} onchange="toggleRut('${semKey}',${dayIdx},${i},this.checked)"/>
+      <div class="rut-body ${t.done?'rut-done':''}">
+        <div class="rut-title">${t.desc}</div>
+        <div class="rut-eq">${t.eq||''}</div>
+      </div>
+    </div>`).join('');
+}
+
+async function toggleRut(sem,day,idx,val) {
+  if(!rutina[sem]||!rutina[sem][day])return;
+  rutina[sem][day][idx].done=val;
+  await apiCall({action:'saveRutina',data:rutina});
+  renderHoyProg();
+}
+
+// ---- RUTINA ----
+function renderWeekPills() {
+  const sem=gv('r-ini');
+  const semData=rutina[sem]||{};
+  document.getElementById('week-pills').innerHTML=DIAS.map((d,i)=>{
+    const has=(semData[i]||[]).length>0;
+    const isA=i===viewDay;
+    return `<div class="day-pill ${isA?'active':''} ${has&&!isA?'has-data':''}" onclick="setViewDay(${i})">${d}</div>`;
+  }).join('');
+}
+
+function setViewDay(i) { viewDay=i; renderWeekPills(); renderWeekContent(); }
+
+function renderWeekContent() {
+  const sem=gv('r-ini');
+  const tareas=((rutina[sem]||{})[viewDay])||[];
+  const c=document.getElementById('rut-content');
+  if(!tareas.length){c.innerHTML=`<p class="empty">${DIAS[viewDay]}: sin tareas programadas.</p>`;return;}
+  c.innerHTML=`<div style="font-size:11px;font-family:var(--mono);color:var(--text3);margin-bottom:8px;">// ${DIAS[viewDay].toUpperCase()}</div>`+
+    tareas.map((t,i)=>`
+      <div class="rut-item">
+        <div class="rut-body" style="flex:1;">
+          <div class="rut-title">${t.desc}</div>
+          <div class="rut-eq">${t.eq||''}</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="delRut('${sem}',${viewDay},${i})">✕</button>
+      </div>`).join('');
+  renderWeekPills();
+}
+
+async function addRutina() {
+  const dia=parseInt(document.getElementById('r-dia').value);
+  const eq=document.getElementById('r-eq').value;
+  const desc=gv('r-desc'); if(!desc){document.getElementById('r-desc').focus();return;}
+  const sem=gv('r-ini'); if(!sem){showToast('Define la fecha de inicio de semana');return;}
+  if(!rutina[sem])rutina[sem]={};
+  if(!rutina[sem][dia])rutina[sem][dia]=[];
+  rutina[sem][dia].push({eq,desc,done:false});
+  document.getElementById('r-desc').value='';
+  const res=await apiCall({action:'saveRutina',data:rutina});
+  if(res.ok) showToast('Tarea agregada');
+  else showToast('Error al guardar');
+  renderWeekContent(); renderHoyProg();
+}
+
+async function delRut(sem,day,idx) {
+  rutina[sem][day].splice(idx,1);
+  await apiCall({action:'saveRutina',data:rutina});
+  renderWeekContent(); renderHoyProg();
+}
+
+document.getElementById('r-ini').addEventListener('change',function(){
+  const lun=new Date(this.value+'T12:00:00');
+  const vie=new Date(lun); vie.setDate(lun.getDate()+4);
+  document.getElementById('r-fin').value=fmtISO(vie);
+  renderWeekPills(); renderWeekContent();
+});
+
+// ---- HISTORIAL ----
+function renderHist() {
+  const allActs=historial.flatMap(d=>d.acts||[]);
+  const stats=[
+    {n:historial.length,l:'Días registrados'},
+    {n:allActs.length,l:'Actividades totales'},
+    {n:allActs.filter(a=>a.tipo==='corr').length,l:'Correctivos'},
+    {n:historial.reduce((s,d)=>s+(d.pends||[]).length,0),l:'Pendientes generados'}
+  ];
+  document.getElementById('stats').innerHTML=stats.map(s=>`<div class="stat"><div class="stat-n">${s.n}</div><div class="stat-l">${s.l}</div></div>`).join('');
+  const l=document.getElementById('hist-list');
+  if(!historial.length){l.innerHTML='<p class="empty">Sin registros aún.</p>';return;}
+  const sorted=[...historial].sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  l.innerHTML=sorted.map(d=>{
+    const tipos=[...new Set((d.acts||[]).map(a=>a.tipo))];
+    const tags=tipos.map(t=>`<span class="badge ${TB[t]||'b-prog'}">${TL[t]||t}</span>`);
+    if((d.pends||[]).length) tags.push(`<span class="badge b-pend">${d.pends.length} pend.</span>`);
+    return `<div class="hist-item" onclick="loadDay('${d.fecha}')">
+      <div class="hist-title">${fmtDisplay(d.fecha)} · ${d.turno||''}</div>
+      <div class="hist-meta">${(d.acts||[]).length} actividades${d.comp?' · Con '+d.comp:''}</div>
+      <div class="hist-tags">${tags.join('')}</div>
+    </div>`;
+  }).join('');
+}
+
+function loadDay(fecha) {
+  const d=historial.find(x=>x.fecha===fecha); if(!d)return;
+  document.getElementById('out-box').textContent=buildReport(d);
+  goTo('reporte',document.querySelector('[data-sec="reporte"]'));
+  showToast('Reporte del '+fmtDisplay(fecha)+' cargado');
+}
+
+// ---- SAVE DAY ----
+async function saveDay() {
+  const fecha=gv('t-fecha');
+  if(!fecha){showToast('Selecciona una fecha');return;}
+  if(!acts.length){showToast('Agrega al menos una actividad');return;}
+  const params=getParams();
+  const entry={
+    fecha, turno:gv('t-turno'), tec:gv('t-tec')||'Jonathan', comp:gv('t-comp'),
+    acts:[...acts], pends:[...pends], obs:gv('t-obs'), params, ts:Date.now()
+  };
+  historial=historial.filter(h=>h.fecha!==fecha);
+  historial.push(entry);
+  setConnStatus('loading','guardando...');
+  const res=await apiCall({action:'saveRegistro',data:entry});
+  if(res.ok){
+    setConnStatus('ok','guardado ✓');
+    showToast('Turno del '+fmtDisplay(fecha)+' guardado');
+    renderHist(); genReport();
+  } else {
+    setConnStatus('err','error al guardar');
+    showToast('Error: '+res.error);
+  }
+}
+
+function getParams() {
+  const ids=['c2p','c2t','c2n','c2e','c3p','c3t','c3n','c3e','c4p','c4t','c4n','c4e','cpp','cpt','cph','cpe'];
+  const p={};
+  ids.forEach(id=>{const v=gv(id);if(v)p[id]=v;});
+  return p;
+}
+
+// ---- REPORTE ----
+function buildReport(d) {
+  const tec=d.tec||'Jonathan', comp=d.comp, fecha=fmtDisplay(d.fecha), tur=d.turno||'', obs=d.obs||'';
+  let t='';
+  t+=`*REPORTE ELÉCTRICO — ÁREA SERVICIOS*\n`;
+  t+=`Técnico: ${tec}${comp?' / '+comp:''}\n`;
+  t+=`Fecha: ${fecha} | ${tur}\n`;
+  t+=`─────────────────────────\n`;
+  const grupos=[['prog','TRABAJOS PROGRAMADOS'],['corr','CORRECTIVOS ATENDIDOS'],['insp','INSPECCIONES'],['apo','APOYO A OTRAS ÁREAS']];
+  grupos.forEach(([tipo,titulo])=>{
+    const grp=(d.acts||[]).filter(a=>a.tipo===tipo);
+    if(!grp.length)return;
+    t+=`\n*${titulo}:*\n`;
+    grp.forEach(a=>{
+      if(a.eq) t+=`*${a.eq}*\n`;
+      t+=`${a.desc}`;
+      if(a.est&&a.est!=='ok') t+=`\n_→ ${EL[a.est]}_`;
+      t+='\n';
+    });
+  });
+  const p=d.params||{};
+  const calData=[];
+  [['c2','Caldera 2'],['c3','Caldera 3'],['c4','Caldera 4']].forEach(([x,nom])=>{
+    const parts=[];
+    if(p[x+'e'])parts.push(p[x+'e']);
+    if(p[x+'p'])parts.push(`P=${p[x+'p']}bar`);
+    if(p[x+'t'])parts.push(`T=${p[x+'t']}°C`);
+    if(p[x+'n'])parts.push(`Nv=${p[x+'n']}%`);
+    if(parts.length) calData.push(`${nom}: ${parts.join(' | ')}`);
+  });
+  const cp=[];
+  if(p.cpe)cp.push(p.cpe);
+  if(p.cpp)cp.push(`P=${p.cpp}bar`);
+  if(p.cpt)cp.push(`T=${p.cpt}°C`);
+  if(p.cph)cp.push(`Hrs=${p.cph}`);
+  if(cp.length) calData.push(`Compresores: ${cp.join(' | ')}`);
+  if(calData.length){ t+=`\n*PARÁMETROS:*\n`; calData.forEach(l=>t+=l+'\n'); }
+  if((d.pends||[]).length){ t+=`\n*PENDIENTES SIGUIENTE TURNO:*\n`; d.pends.forEach(p=>t+=`· ${p.t||p}\n`); }
+  if(obs){ t+=`\n*OBSERVACIONES:*\n${obs}\n`; }
+  t+=`─────────────────────────`;
+  return t;
+}
+
+function genReport() {
+  const d={fecha:gv('t-fecha'),turno:gv('t-turno'),tec:gv('t-tec')||'Jonathan',comp:gv('t-comp'),acts,pends,obs:gv('t-obs'),params:getParams()};
+  if(!acts.length){document.getElementById('out-box').textContent='Registra actividades en "Turno de hoy" para generar el reporte...';return;}
+  document.getElementById('out-box').textContent=buildReport(d);
+}
+
+function copyReport() {
+  const txt=document.getElementById('out-box').textContent;
+  if(txt.includes('Registra actividades'))return;
+  navigator.clipboard.writeText(txt).then(()=>showToast('Copiado al portapapeles'));
+}
+
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+['t-tec','t-fecha','t-turno','t-comp','t-obs'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el){el.addEventListener('change',()=>{genReport();renderHoyProg();});el.addEventListener('input',genReport);}
+});
+
+init();
+</script>
+</body>
+</html>
