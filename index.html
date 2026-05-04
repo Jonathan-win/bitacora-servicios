@@ -789,7 +789,67 @@ function showToast(msg) {
   if(el){el.addEventListener('change',()=>{genReport();renderHoyProg();});el.addEventListener('input',genReport);}
 });
 
-init();
+// ---- RUTINA PRECARGADA SEMANA 4-9 MAY 2026 ----
+async function preloadRutina() {
+  // Solo cargar si no existe ya esta semana
+  const semKey = '2026-05-04';
+  if (rutina[semKey]) return;
+
+  const semana = {
+    '2026-05-04': {
+      // Lunes 4-May
+      0: [
+        {eq:'BBA 19A', desc:'LIMP E INSP 1S DE MOTOR ELECTR BBA 19A — OM 100708910 (PM02)', done:false},
+        {eq:'BBA 19B', desc:'LIMP E INSP 1S DE MOTOR ELECTR BBA 19B — OM 100713606 (PM02)', done:false},
+        {eq:'BBA 19C', desc:'LIMP E INSP 1S DE MOTOR ELECTR BBA 19C — OM 100713630 (PM02)', done:false},
+        {eq:'BBA 320B', desc:'LIMP E INSP 1S DE MOTOR ELECTR BBA 320B — OM 100713651 (PM02)', done:false},
+        {eq:'Grupo electrógeno', desc:'LIMP 2S SALA GRUPO ELECTROGENO — OM 100710866 (PM02)', done:false},
+        {eq:'Servicios', desc:'ACTIVIDADES TPM 1M - ELECTRICO SERVICIO — OM 24610527 (PM05)', done:false},
+      ],
+      // Martes 5-May
+      1: [
+        {eq:'Prensa de lodos 1', desc:'LIMP 1S MOTOR TELAS P.LODO 1 SERV — OM 100727767 (PM02)', done:false},
+        {eq:'Prensa de lodos 2', desc:'LIMP 1S MOTOR TELAS P.LODO 2 SERV — OM 100727770 (PM02)', done:false},
+        {eq:'Servicios', desc:'ACTIVIDADES TPM 1M - ELECTRICO SERVICIO — OM 24610527 (PM05)', done:false},
+      ],
+      // Miércoles 6-May
+      2: [
+        {eq:'Sistema contraincendios', desc:'INSP 1S ELEC SISTEMA CONTRAINCENDIOS — OM 100713018 (PM02)', done:false},
+        {eq:'Prensa de lodos 1', desc:'INSP 1S PALETAS INF SUP P.LODOS 1 SERV — OM 100708669 (PM02)', done:false},
+        {eq:'Prensa de lodos 2', desc:'INSP 1S PALETAS INF SUP P.LODOS 2 SERV — OM 100708695 (PM02)', done:false},
+        {eq:'Prensa de lodos 3', desc:'LIMP 1S MOTOR TELAS P.LODO 3 SERV — OM 100727773 (PM02)', done:false},
+        {eq:'Servicios', desc:'ACTIVIDADES TPM 1M - ELECTRICO SERVICIO — OM 24610527 (PM05)', done:false},
+      ],
+      // Jueves 7-May
+      3: [
+        {eq:'Compresor', desc:'LIMP 1S DE SALA DE COMPRESORES — OM 100738513 (PM02)', done:false},
+        {eq:'Compresor', desc:'LIMP 1S DE SALA DE COMPRESORES N°2 — OM 100738564 (PM02)', done:false},
+        {eq:'Compresor', desc:'LIMP 1S DE SALA DE COMPRESORES N°3 — OM 100738615 (PM02)', done:false},
+        {eq:'Prensa de lodos 3', desc:'INSP 1S PALETAS INF SUP P.LODOS 3 SERV — OM 100708721 (PM02)', done:false},
+        {eq:'Grupo electrógeno', desc:'EQUIPO Y PRUEBA ENCENDIDO GGEE — OM 100728638 (PM02)', done:false},
+        {eq:'Servicios', desc:'ACTIVIDADES TPM 1M - ELECTRICO SERVICIO — OM 24610527 (PM05)', done:false},
+      ],
+      // Viernes 8-May
+      4: [
+        {eq:'General', desc:'TPMR COLOCAR PULSADOR (OM INDICA MARITZA) — PM03 CORRECTIVO', done:false},
+        {eq:'Bomba comedor', desc:'INSP 1S ELEC BOMBA CENTRIFUGA 01 COMEDOR — OM 100712762 (PM02)', done:false},
+        {eq:'Bomba comedor', desc:'INSP 1S ELEC BOMBA CENTRIFUGA 02 COMEDOR — OM 100712787 (PM02)', done:false},
+        {eq:'Servicios', desc:'ACTIVIDADES TPM 1M - ELECTRICO SERVICIO — OM 24610527 (PM05)', done:false},
+      ],
+    }
+  };
+
+  // Cargar en Google Sheets también
+  rutina = {...rutina, ...semana};
+  document.getElementById('r-ini').value = semKey;
+  const vie = new Date('2026-05-04T12:00:00'); vie.setDate(vie.getDate()+4);
+  document.getElementById('r-fin').value = fmtISO(vie);
+  const res = await apiCall({action:'saveRutina', data:rutina});
+  if(res.ok) showToast('Rutina semana 4–9 May cargada ✓');
+  renderWeekPills(); renderWeekContent(); renderHoyProg();
+}
+
+init().then(() => preloadRutina());
 </script>
 </body>
 </html>
