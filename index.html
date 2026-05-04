@@ -234,9 +234,11 @@ select option { background: var(--bg3); }
       <div class="field"><label>Fecha</label><input type="date" id="t-fecha"/></div>
       <div class="field"><label>Turno</label>
         <select id="t-turno">
-          <option>Día (07:00–17:00)</option>
-          <option>Día viernes (07:00–15:00)</option>
-          <option>Turno especial</option>
+          <option>Lunes</option>
+          <option>Martes</option>
+          <option>Miércoles</option>
+          <option>Jueves</option>
+          <option>Viernes</option>
         </select>
       </div>
     </div>
@@ -731,6 +733,20 @@ function buildReport(d) {
   t+=`Técnico: ${tec}${comp?' / '+comp:''}\n`;
   t+=`Fecha: ${fecha} | ${tur}\n`;
   t+=`─────────────────────────\n`;
+
+  // Rutina programada ejecutada
+  const semKey=gv('r-ini');
+  const fecha_d=d.fecha?new Date(d.fecha+'T12:00:00'):null;
+  const dayIdx=fecha_d?(fecha_d.getDay()===0?6:fecha_d.getDay()-1):null;
+  const tareasHoy=(dayIdx!==null&&rutina[semKey])?((rutina[semKey][dayIdx])||[]):[];
+  if(tareasHoy.length){
+    const hechas=tareasHoy.filter(x=>x.done);
+    const pendRut=tareasHoy.filter(x=>!x.done);
+    t+=`\n*RUTINA PROGRAMADA:*\n`;
+    hechas.forEach(x=>{ t+=`✓ ${x.desc}\n`; });
+    pendRut.forEach(x=>{ t+=`✗ ${x.desc} _(pendiente)_\n`; });
+  }
+
   const grupos=[['prog','TRABAJOS PROGRAMADOS'],['corr','CORRECTIVOS ATENDIDOS'],['insp','INSPECCIONES'],['apo','APOYO A OTRAS ÁREAS']];
   grupos.forEach(([tipo,titulo])=>{
     const grp=(d.acts||[]).filter(a=>a.tipo===tipo);
