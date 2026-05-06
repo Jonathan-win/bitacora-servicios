@@ -502,14 +502,16 @@ async function init() {
       historial.push({
         fecha:'2026-05-04', turno:'Lunes', tec:'Jonathan', comp:'',
         acts:[
-          {tipo:'prog',eq:'BBA 19A',desc:'LIMP E INSP 1S DE MOTOR ELECTR BBA 19A — OM 100708910 (PM02)',est:'ok',id:1},
-          {tipo:'prog',eq:'BBA 19B',desc:'LIMP E INSP 1S DE MOTOR ELECTR BBA 19B — OM 100713606 (PM02)',est:'ok',id:2},
-          {tipo:'prog',eq:'BBA 19C',desc:'LIMP E INSP 1S DE MOTOR ELECTR BBA 19C — OM 100713630 (PM02)',est:'ok',id:3},
-          {tipo:'prog',eq:'BBA 320B',desc:'LIMP E INSP 1S DE MOTOR ELECTR BBA 320B — OM 100713651 (PM02)',est:'ok',id:4},
-          {tipo:'prog',eq:'Servicios',desc:'ACTIVIDADES TPM 1M - ELECTRICO SERVICIO — OM 24610527 (PM05)',est:'ok',id:5},
-          {tipo:'prog',eq:'Grupo electrógeno',desc:'LIMP 2S SALA GRUPO ELECTROGENO — OM 100710866 (PM02)',est:'pend',id:6},
           {tipo:'corr',eq:'Krofta 1',desc:'Bomba 300c, se encontró sucio el tanque y boyas. Con la ayuda del operador Thomas se limpió el área y se corrigió la regulación de la boya.',est:'ok',id:7},
           {tipo:'corr',eq:'Prensa de lodos 2',desc:'Variador alarmado de motor de prensas. Alarma (0.F30004) por sobretemperatura. Se refrigera variador y se limpia parte interna, asimismo se retira ventilador de variador para su limpieza.',est:'ok',id:8}
+        ],
+        rutinaDia:[
+          {eq:'BBA 19A',desc:'LIMP E INSP 1S DE MOTOR ELECTR BBA 19A — OM 100708910 (PM02)',done:true},
+          {eq:'BBA 19B',desc:'LIMP E INSP 1S DE MOTOR ELECTR BBA 19B — OM 100713606 (PM02)',done:true},
+          {eq:'BBA 19C',desc:'LIMP E INSP 1S DE MOTOR ELECTR BBA 19C — OM 100713630 (PM02)',done:true},
+          {eq:'BBA 320B',desc:'LIMP E INSP 1S DE MOTOR ELECTR BBA 320B — OM 100713651 (PM02)',done:true},
+          {eq:'Servicios',desc:'ACTIVIDADES TPM 1M - ELECTRICO SERVICIO — OM 24610527 (PM05)',done:true},
+          {eq:'Grupo electrógeno',desc:'LIMP 2S SALA GRUPO ELECTROGENO — OM 100710866 (PM02)',done:false}
         ],
         pends:[{t:'LIMP 2S SALA GRUPO ELECTROGENO — OM 100710866 (PM02)',id:1}],
         obs:'', params:{}, ts:1746398400000
@@ -522,11 +524,13 @@ async function init() {
       historial.push({
         fecha:'2026-05-05', turno:'Martes', tec:'Jonathan', comp:'',
         acts:[
-          {tipo:'prog',eq:'Prensa de lodos 1',desc:'LIMP 1S MOTOR TELAS P.LODO 1 SERV — OM 100727767 (PM02)',est:'pend',id:1},
-          {tipo:'prog',eq:'Prensa de lodos 2',desc:'LIMP 1S MOTOR TELAS P.LODO 2 SERV — OM 100727770 (PM02)',est:'ok',id:2},
-          {tipo:'prog',eq:'Prensa de lodos 3',desc:'LIMP 1S MOTOR TELAS P.LODO 3 SERV — OM 100727773 (PM02)',est:'pend',id:3},
-          {tipo:'prog',eq:'Servicios',desc:'ACTIVIDADES TPM 1M - ELECTRICO SERVICIO — OM 24610527 (PM05)',est:'ok',id:4},
           {tipo:'corr',eq:'Prensa de lodos 2',desc:'Se encontró tubería corrugado flexible 1/2" deteriorada con empalme de cable en mal estado. Se cambió tubería corrugado flexible 1/2" con conectores rectos. Se cambiaron terminales del cable de alimentación del motor hacia caja de bornes.',est:'ok',id:5}
+        ],
+        rutinaDia:[
+          {eq:'Prensa de lodos 1',desc:'LIMP 1S MOTOR TELAS P.LODO 1 SERV — OM 100727767 (PM02)',done:false},
+          {eq:'Prensa de lodos 2',desc:'LIMP 1S MOTOR TELAS P.LODO 2 SERV — OM 100727770 (PM02)',done:true},
+          {eq:'Prensa de lodos 3',desc:'LIMP 1S MOTOR TELAS P.LODO 3 SERV — OM 100727773 (PM02)',done:false},
+          {eq:'Servicios',desc:'ACTIVIDADES TPM 1M - ELECTRICO SERVICIO — OM 24610527 (PM05)',done:true}
         ],
         pends:[
           {t:'LIMP 1S MOTOR TELAS P.LODO 1 SERV — OM 100727767 (PM02)',id:1},
@@ -816,9 +820,15 @@ async function saveDay() {
   if(!fecha){showToast('Selecciona una fecha');return;}
   if(!acts.length){showToast('Agrega al menos una actividad');return;}
   const params=getParams();
+  // Guardar también la rutina del día para historial
+  const semKey=gv('r-ini');
+  const fecha_d=new Date(fecha+'T12:00:00');
+  const dayIdx=fecha_d.getDay()===0?6:fecha_d.getDay()-1;
+  const rutinaDia=((rutina[semKey]||{})[dayIdx])||[];
   const entry={
     fecha, turno:gv('t-turno'), tec:gv('t-tec')||'Jonathan', comp:gv('t-comp'),
-    acts:[...acts], pends:[...pends], obs:gv('t-obs'), params, ts:Date.now()
+    acts:[...acts], pends:[...pends], obs:gv('t-obs'), params,
+    rutinaDia:[...rutinaDia], ts:Date.now()
   };
   historial=historial.filter(h=>h.fecha!==fecha);
   historial.push(entry);
@@ -850,11 +860,14 @@ function buildReport(d) {
   t+=`Fecha: ${fecha} | ${tur}\n`;
   t+=`─────────────────────────\n`;
 
-  // Rutina programada ejecutada
-  const semKey=gv('r-ini');
-  const fecha_d=d.fecha?new Date(d.fecha+'T12:00:00'):null;
-  const dayIdx=fecha_d?(fecha_d.getDay()===0?6:fecha_d.getDay()-1):null;
-  const tareasHoy=(dayIdx!==null&&rutina[semKey])?((rutina[semKey][dayIdx])||[]):[];
+  // Rutina programada — usar la guardada en el registro o la activa
+  let tareasHoy = d.rutinaDia || [];
+  if(!tareasHoy.length){
+    const semKey=gv('r-ini');
+    const fecha_d=d.fecha?new Date(d.fecha+'T12:00:00'):null;
+    const dayIdx=fecha_d?(fecha_d.getDay()===0?6:fecha_d.getDay()-1):null;
+    tareasHoy=(dayIdx!==null&&rutina[semKey])?((rutina[semKey][dayIdx])||[]):[];
+  }
   if(tareasHoy.length){
     const hechas=tareasHoy.filter(x=>x.done);
     const pendRut=tareasHoy.filter(x=>!x.done);
