@@ -743,9 +743,71 @@ function renderHist() {
 
 function loadDay(fecha) {
   const d=historial.find(x=>x.fecha===fecha); if(!d)return;
-  document.getElementById('out-box').textContent=buildReport(d);
-  goTo('reporte',document.querySelector('[data-sec="reporte"]'));
-  showToast('Reporte del '+fmtDisplay(fecha)+' cargado');
+  const TFull={prog:'Programado',corr:'Correctivo',insp:'Inspección',apo:'Apoyo'};
+  const TB2={prog:'b-prog',corr:'b-corr',insp:'b-insp',apo:'b-apo'};
+  const EB2={ok:'b-ok',pend:'b-pend',obs:'b-obs',lila:'b-lila'};
+  const EL2={ok:'Operativo',pend:'Pendiente sig. turno',obs:'Con observación',lila:'Se deja en LILA'};
+
+  // Agrupar actividades por tipo
+  const grupos=[['prog','TRABAJOS PROGRAMADOS'],['corr','CORRECTIVOS'],['insp','INSPECCIONES'],['apo','APOYO']];
+  let actsHtml='';
+  grupos.forEach(([tipo,titulo])=>{
+    const grp=(d.acts||[]).filter(a=>a.tipo===tipo);
+    if(!grp.length)return;
+    actsHtml+=`<div style="font-size:11px;font-family:var(--mono);color:var(--text3);margin:12px 0 6px;letter-spacing:.05em;">${titulo}</div>`;
+    actsHtml+=grp.map(a=>`
+      <div class="act-item">
+        <span class="badge ${TB2[a.tipo]}">${TFull[a.tipo]}</span>
+        <div>
+          <div class="act-body">${a.desc}</div>
+          <div class="act-meta">${a.eq?'<span>'+a.eq+'</span>':''}<span class="badge ${EB2[a.est]||'b-ok'}">${EL2[a.est]||a.est}</span></div>
+        </div>
+      </div>`).join('');
+  });
+
+  // Pendientes
+  let pendsHtml='';
+  if((d.pends||[]).length){
+    pendsHtml=`<div style="font-size:11px;font-family:var(--mono);color:var(--text3);margin:12px 0 6px;letter-spacing:.05em;">PENDIENTES</div>`;
+    pendsHtml+=d.pends.map(p=>`<div class="pend-row"><span>· ${p.t||p}</span></div>`).join('');
+  }
+
+  // Observaciones
+  let obsHtml='';
+  if(d.obs) obsHtml=`<div style="font-size:11px;font-family:var(--mono);color:var(--text3);margin:12px 0 6px;letter-spacing:.05em;">OBSERVACIONES</div>
+    <div style="font-size:13px;color:var(--color-text-secondary);padding:8px;background:var(--bg3);border-radius:6px;">${d.obs}</div>`;
+
+  // Reporte WhatsApp
+  const reporteTxt = buildReport(d);
+
+  // Construir vista de detalle
+  const detailHtml = `
+    <div style="margin-bottom:1rem;">
+      <button class="btn btn-sm" onclick="renderHist()" style="margin-bottom:12px;">← Volver al historial</button>
+      <div class="card">
+        <div class="card-label">Resumen del día</div>
+        <div class="g3">
+          <div class="field"><label>Fecha</label><div style="font-size:14px;font-weight:500;color:var(--text);padding:6px 0;">${fmtDisplay(d.fecha)}</div></div>
+          <div class="field"><label>Día</label><div style="font-size:14px;font-weight:500;color:var(--text);padding:6px 0;">${d.turno||''}</div></div>
+          <div class="field"><label>Técnico</label><div style="font-size:14px;font-weight:500;color:var(--text);padding:6px 0;">${d.tec||'Jonathan'}${d.comp?' / '+d.comp:''}</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Actividades (${(d.acts||[]).length})</div>
+        ${actsHtml||'<p class="empty">Sin actividades registradas.</p>'}
+        ${pendsHtml}
+        ${obsHtml}
+      </div>
+      <div class="card">
+        <div class="card-label">Reporte WhatsApp</div>
+        <div class="out-box" style="font-size:12px;">${reporteTxt}</div>
+        <button class="btn btn-green btn-full" onclick="navigator.clipboard.writeText(document.querySelector('.out-box').textContent).then(()=>showToast('Copiado'))">Copiar al portapapeles</button>
+      </div>
+    </div>`;
+
+  document.getElementById('hist-list').innerHTML = detailHtml;
+  document.getElementById('stats').style.display='none';
+  showToast('Turno del '+fmtDisplay(fecha));
 }
 
 // ---- SAVE DAY ----
