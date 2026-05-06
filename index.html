@@ -455,11 +455,26 @@ const EB = {ok:'b-ok',pend:'b-pend',obs:'b-obs',lila:'b-lila'};
 
 // ---- API ----
 async function apiCall(params) {
-  const url = new URL(API);
-  Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, typeof v === 'object' ? JSON.stringify(v) : v));
+  const writeActions = ['saveRegistro','saveRutina'];
+  const isWrite = writeActions.includes(params.action);
   try {
-    const r = await fetch(url.toString());
-    return await r.json();
+    let r;
+    if (isWrite) {
+      // POST para escrituras — evita límite de URL
+      const formData = new FormData();
+      Object.entries(params).forEach(([k,v]) => {
+        formData.append(k, typeof v === 'object' ? JSON.stringify(v) : v);
+      });
+      r = await fetch(API, { method: 'POST', body: formData });
+    } else {
+      // GET para lecturas
+      const url = new URL(API);
+      Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, typeof v === 'object' ? JSON.stringify(v) : v));
+      r = await fetch(url.toString());
+    }
+    const text = await r.text();
+    try { return JSON.parse(text); }
+    catch(e) { return {ok:false,error:'Parse error: '+text.substring(0,100)}; }
   } catch(e) { return {ok:false,error:e.message}; }
 }
 
@@ -482,6 +497,45 @@ async function init() {
     ]);
     if (rh.ok) historial = Array.isArray(rh.data) ? rh.data : [];
     if (rr.ok) rutina = rr.data || {};
+    // Si no hay registro del lunes, cargarlo como respaldo
+    if (!historial.find(h=>h.fecha==='2026-05-04')) {
+      historial.push({
+        fecha:'2026-05-04', turno:'Lunes', tec:'Jonathan', comp:'',
+        acts:[
+          {tipo:'prog',eq:'BBA 19A',desc:'LIMP E INSP 1S DE MOTOR ELECTR BBA 19A — OM 100708910 (PM02)',est:'ok',id:1},
+          {tipo:'prog',eq:'BBA 19B',desc:'LIMP E INSP 1S DE MOTOR ELECTR BBA 19B — OM 100713606 (PM02)',est:'ok',id:2},
+          {tipo:'prog',eq:'BBA 19C',desc:'LIMP E INSP 1S DE MOTOR ELECTR BBA 19C — OM 100713630 (PM02)',est:'ok',id:3},
+          {tipo:'prog',eq:'BBA 320B',desc:'LIMP E INSP 1S DE MOTOR ELECTR BBA 320B — OM 100713651 (PM02)',est:'ok',id:4},
+          {tipo:'prog',eq:'Servicios',desc:'ACTIVIDADES TPM 1M - ELECTRICO SERVICIO — OM 24610527 (PM05)',est:'ok',id:5},
+          {tipo:'prog',eq:'Grupo electrógeno',desc:'LIMP 2S SALA GRUPO ELECTROGENO — OM 100710866 (PM02)',est:'pend',id:6},
+          {tipo:'corr',eq:'Krofta 1',desc:'Bomba 300c, se encontró sucio el tanque y boyas. Con la ayuda del operador Thomas se limpió el área y se corrigió la regulación de la boya.',est:'ok',id:7},
+          {tipo:'corr',eq:'Prensa de lodos 2',desc:'Variador alarmado de motor de prensas. Alarma (0.F30004) por sobretemperatura. Se refrigera variador y se limpia parte interna, asimismo se retira ventilador de variador para su limpieza.',est:'ok',id:8}
+        ],
+        pends:[{t:'LIMP 2S SALA GRUPO ELECTROGENO — OM 100710866 (PM02)',id:1}],
+        obs:'', params:{}, ts:1746398400000
+      });
+      // Intentar guardarlo en Sheets también
+      apiCall({action:'saveRegistro', data: historial[historial.length-1]});
+    }
+    // Respaldo martes 05/05
+    if (!historial.find(h=>h.fecha==='2026-05-05')) {
+      historial.push({
+        fecha:'2026-05-05', turno:'Martes', tec:'Jonathan', comp:'',
+        acts:[
+          {tipo:'prog',eq:'Prensa de lodos 1',desc:'LIMP 1S MOTOR TELAS P.LODO 1 SERV — OM 100727767 (PM02)',est:'pend',id:1},
+          {tipo:'prog',eq:'Prensa de lodos 2',desc:'LIMP 1S MOTOR TELAS P.LODO 2 SERV — OM 100727770 (PM02)',est:'ok',id:2},
+          {tipo:'prog',eq:'Prensa de lodos 3',desc:'LIMP 1S MOTOR TELAS P.LODO 3 SERV — OM 100727773 (PM02)',est:'pend',id:3},
+          {tipo:'prog',eq:'Servicios',desc:'ACTIVIDADES TPM 1M - ELECTRICO SERVICIO — OM 24610527 (PM05)',est:'ok',id:4},
+          {tipo:'corr',eq:'Prensa de lodos 2',desc:'Se encontró tubería corrugado flexible 1/2" deteriorada con empalme de cable en mal estado. Se cambió tubería corrugado flexible 1/2" con conectores rectos. Se cambiaron terminales del cable de alimentación del motor hacia caja de bornes.',est:'ok',id:5}
+        ],
+        pends:[
+          {t:'LIMP 1S MOTOR TELAS P.LODO 1 SERV — OM 100727767 (PM02)',id:1},
+          {t:'LIMP 1S MOTOR TELAS P.LODO 3 SERV — OM 100727773 (PM02)',id:2}
+        ],
+        obs:'', params:{}, ts:1746453600000
+      });
+      apiCall({action:'saveRegistro', data: historial[historial.length-1]});
+    }
     setConnStatus('ok','sheets conectado');
   } catch(e) {
     setConnStatus('err','sin conexión');
