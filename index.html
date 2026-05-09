@@ -693,6 +693,17 @@ function renderHist(){
   document.getElementById('nb-hist').textContent=historial.length;
 }
 
+function getDriveUrl(fecha){
+  const links={
+    '2026-05-04':'https://drive.google.com/drive/folders/1hViU35rtcC4DBY208ucqNdVwZTkI1pcN?usp=sharing',
+    '2026-05-05':'https://drive.google.com/drive/folders/1cMteRGj3nJtkg6rKAs92pF-ez05BUjTr?usp=sharing',
+    '2026-05-06':'https://drive.google.com/drive/folders/1rfjtRVDzcSHk_nbOzypnith53kViihE7?usp=sharing',
+    '2026-05-07':'https://drive.google.com/drive/folders/1jUkNH7Nw1RyRhjxiLMG--iCKihgLGTnu?usp=sharing',
+    '2026-05-08':'https://drive.google.com/drive/folders/1j4JOcJuUavQoHa-qUXZi_Gh3yWc718Pp?usp=sharing',
+  };
+  return links[fecha]||'';
+}
+
 function showDetail(fecha){
   const d=historial.find(x=>x.fecha===fecha);if(!d)return;
   const grupos=[['prog','TRABAJOS PROGRAMADOS'],['corr','CORRECTIVOS ATENDIDOS'],['insp','INSPECCIONES'],['mej','MEJORAS'],['apo','APOYO A OTRAS ÁREAS']];
@@ -728,7 +739,7 @@ function showDetail(fecha){
     pendsHtml+=d.pends.map(p=>`<div class="pend-item"><span class="badge b-pend" style="flex-shrink:0;">PEND</span><span>${p.t||p}</span></div>`).join('');
   }
   document.getElementById('stats-grid').style.display='none';
-  const driveBtn = d.driveUrl
+  const driveBtn = (d.driveUrl||getDriveUrl(fecha))
     ? `<a href="${d.driveUrl}" target="_blank" class="btn" style="display:flex;align-items:center;gap:8px;justify-content:center;text-decoration:none;margin-bottom:8px;border-color:var(--green);color:var(--green);">
         <span>📁</span> Ver fotos en Google Drive
        </a>`
