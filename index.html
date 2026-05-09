@@ -739,8 +739,9 @@ function showDetail(fecha){
     pendsHtml+=d.pends.map(p=>`<div class="pend-item"><span class="badge b-pend" style="flex-shrink:0;">PEND</span><span>${p.t||p}</span></div>`).join('');
   }
   document.getElementById('stats-grid').style.display='none';
-  const driveBtn = (d.driveUrl||getDriveUrl(fecha))
-    ? `<a href="${d.driveUrl}" target="_blank" class="btn" style="display:flex;align-items:center;gap:8px;justify-content:center;text-decoration:none;margin-bottom:8px;border-color:var(--green);color:var(--green);">
+  const resolvedDrive = d.driveUrl || getDriveUrl(fecha);
+  const driveBtn = resolvedDrive
+    ? `<a href="${resolvedDrive}" target="_blank" class="btn" style="display:flex;align-items:center;gap:8px;justify-content:center;text-decoration:none;margin-bottom:8px;border-color:var(--green);color:var(--green);">
         <span>📁</span> Ver fotos en Google Drive
        </a>`
     : `<div style="font-family:var(--mono);font-size:11px;color:var(--text3);padding:8px;text-align:center;">Sin carpeta de fotos vinculada para este día</div>`;
