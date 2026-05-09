@@ -378,18 +378,15 @@ const EL={ok:'Operativo',pend:'Pendiente sig. turno',obs:'Con observación',lila
 const EB={ok:'b-ok',pend:'b-pend',obs:'b-obs',lila:'b-lila'};
 
 async function apiCall(params){
-  const writes=['saveRegistro','saveRutina'];
   try{
-    let r;
-    if(writes.includes(params.action)){
-      const fd=new FormData();
-      Object.entries(params).forEach(([k,v])=>fd.append(k,typeof v==='object'?JSON.stringify(v):v));
-      r=await fetch(API,{method:'POST',body:fd});
-    }else{
-      const url=new URL(API);
-      Object.entries(params).forEach(([k,v])=>url.searchParams.set(k,typeof v==='object'?JSON.stringify(v):v));
-      r=await fetch(url.toString());
-    }
+    // Usar siempre GET con URL params — Apps Script maneja mejor CORS así
+    const url=new URL(API);
+    Object.entries(params).forEach(([k,v])=>{
+      const val=typeof v==='object'?JSON.stringify(v):String(v);
+      // Truncar si es muy largo para evitar error 414
+      url.searchParams.set(k, val.length>2000 ? val.substring(0,2000) : val);
+    });
+    const r=await fetch(url.toString());
     const txt=await r.text();
     try{return JSON.parse(txt);}catch(e){return{ok:false,error:'Parse error'};}
   }catch(e){return{ok:false,error:e.message};}
@@ -453,6 +450,19 @@ function loadRespaldos(){
        {eq:'Servicios',om:'24610527',desc:'ACTIVIDADES TPM 1M - ELECTRICO SERVICIO — OM 24610527 (PM05)',done:true}
      ],
      pends:[{t:'INSP 1S ELEC SISTEMA CONTRAINCENDIOS — OM 100713018',id:1},{t:'Correctivo electroválvulas torres enfriamiento — pendiente programar',id:2},{t:'Corrección setpoints bombas 308A/308B — coordinar con programador',id:3}],obs:'',params:{},ts:1746540000000},
+    {fecha:'2026-05-07',turno:'Jueves',tec:'Jonathan',comp:'',
+     acts:[],
+     rutinaDia:[
+       {eq:'Compresor',om:'100738513',desc:'LIMP 1S DE SALA DE COMPRESORES — OM 100738513 (PM02)',done:false},
+       {eq:'Compresor',om:'100738564',desc:'LIMP 1S DE SALA DE COMPRESORES N°2 — OM 100738564 (PM02)',done:false},
+       {eq:'Compresor',om:'100738615',desc:'LIMP 1S DE SALA DE COMPRESORES N°3 — OM 100738615 (PM02)',done:false},
+       {eq:'Prensa de lodos 3',om:'100708721',desc:'INSP 1S PALETAS INF SUP P.LODOS 3 SERV — OM 100708721 (PM02)',done:false},
+       {eq:'Grupo electrógeno',om:'100728638',desc:'LIMP 1S EQUIPO Y PRUEBA ENCENDIDO GGEE — OM 100728638 (PM02)',done:false},
+       {eq:'Servicios',om:'24610527',desc:'ACTIVIDADES TPM 1M - ELECTRICO SERVICIO — OM 24610527 (PM05)',done:false}
+     ],
+     pends:[],obs:'',params:{},
+     driveUrl:'https://drive.google.com/drive/folders/1jUkNH7Nw1RyRhjxiLMG--iCKihgLGTnu?usp=sharing',
+     ts:1746626400000},
     {fecha:'2026-05-08',turno:'Viernes',tec:'Jonathan',comp:'',
      acdriveUrl:'https://drive.google.com/drive/folders/1j4JOcJuUavQoHa-qUXZi_Gh3yWc718Pp?usp=sharing',ts:[
        {tipo:'corr',eq:'Krofta 1 / Krofta 2',om:'',desc:'Limpieza de tableros eléctricos y componentes eléctricos por presencia de humedad ocasionada por lluvias durante la madrugada, para prevenir fallas y asegurar continuidad operativa.',est:'ok',id:1},
