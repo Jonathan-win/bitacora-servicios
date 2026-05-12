@@ -400,13 +400,14 @@ function gv(id){const el=document.getElementById(id);return el?el.value.trim():'
 async function init(){
   setTodayDate();setWeekDates();
   setConn('loading','cargando...');
+  preloadSemanaLocal();
   try{
-    const[rh,rr]=await Promise.all([apiCall({action:'getRegistros'}),apiCall({action:'getRutina'})]);
+    const rh=await apiCall({action:'getRegistros'});
     if(rh.ok)historial=Array.isArray(rh.data)?rh.data:[];
-    if(rr.ok)rutina=rr.data||{};
-    setConn('ok','sheets conectado');
+    setConn('ok','conectado');
   }catch(e){setConn('err','sin conexión');}
-  loadRespaldos();renderAll();
+  loadRespaldos();
+  renderAll();
 }
 
 function loadRespaldos(){
@@ -491,12 +492,9 @@ function setTodayDate(){
 }
 
 function setWeekDates(){
-  const h=new Date();
-  const diff=h.getDay()===0?-6:1-h.getDay();
-  const lun=new Date(h);lun.setDate(h.getDate()+diff);
-  const vie=new Date(lun);vie.setDate(lun.getDate()+4);
-  document.getElementById('r-ini').value=fmtISO(lun);
-  document.getElementById('r-fin').value=fmtISO(vie);
+  // Semana actual: 11-15 Mayo 2026
+  document.getElementById('r-ini').value='2026-05-11';
+  document.getElementById('r-fin').value='2026-05-15';
 }
 
 function renderAll(){
@@ -847,65 +845,66 @@ function showToast(msg){
   if(el){el.addEventListener('change',()=>{genReport();renderHoyProg();});el.addEventListener('input',genReport);}
 });
 
-async function preloadSemana(){
+function preloadSemanaLocal(){
   const semKey='2026-05-11';
-  if(rutina[semKey])return;
   rutina[semKey]={
     0:[
-      {eq:'BBA 19A',om:'100708910',desc:'LIMP E INSP 1S DE MOTOR ELECTR BBA 19A — OM 100708910 (PM02)',done:false},
-      {eq:'BBA 19B',om:'100713606',desc:'LIMP E INSP 1S DE MOTOR ELECTR BBA 19B — OM 100713606 (PM02)',done:false},
-      {eq:'BBA 19C',om:'100713630',desc:'LIMP E INSP 1S DE MOTOR ELECTR BBA 19C — OM 100713630 (PM02)',done:false},
-      {eq:'BBA 320B',om:'100713651',desc:'LIMP E INSP 1S DE MOTOR ELECTR BBA 320B — OM 100713651 (PM02)',done:false},
-      {eq:'Grupo electrógeno',om:'100710866',desc:'LIMP 2S SALA GRUPO ELECTROGENO — OM 100710866 (PM02)',done:false},
+      {eq:'Bomba 308A',om:'100675204',desc:'INSP 1M MOTOR BOMBA 308A ELEC SERV — OM 100675204 (PM02)',done:false},
+      {eq:'Bomba 307A',om:'100675226',desc:'INSP 1M MOTOR DE BOMBA 307A ELEC SERV — OM 100675226 (PM02)',done:false},
+      {eq:'Motor 309',om:'100675248',desc:'INSP 1M MOTOR 309 ELEC SERV — OM 100675248 (PM02)',done:false},
+      {eq:'Pozo profundo 1',om:'100712343',desc:'INSP 2S TOMA FLUJO/AMPERAJ BB POZO1 SERV — OM 100712343 (PM02)',done:false},
+      {eq:'Pozo profundo 2',om:'100712356',desc:'INSP 2S TOMA FLUJO/AMPERAJ BB POZO2 SERV — OM 100712356 (PM02)',done:false},
+      {eq:'Bomba 308A',om:'100712931',desc:'INSP 1M MOTOR BOMBA 308A SERV — OM 100712931 (PM02)',done:false},
+      {eq:'Prensa de lodos 3',om:'100750106',desc:'TPMR CAMBIO DE ITM TRIFASICO PL3 — OM 100750106 (PM03)',done:false},
+      {eq:'General',om:'100754389',desc:'TPMR CAMBIO DE PULSADORES LED Y PILOTO T — OM 100754389 (PM03)',done:false},
+      {eq:'Motor 300',om:'100758254',desc:'TPMR CAMB DE VENTILADOR DE MOTOR 300 — OM 100758254 (PM03)',done:false},
       {eq:'Servicios',om:'24610527',desc:'ACTIVIDADES TPM 1M - ELECTRICO SERVICIO — OM 24610527 (PM05)',done:false},
+      {eq:'Servicios',om:'24610527-1',desc:'REUNIÓN DE TARJETAS ROJA — OM 24610527-1 (PM05)',done:false},
     ],
     1:[
-      {eq:'Prensa de lodos 1',om:'100727767',desc:'LIMP 1S MOTOR TELAS P.LODO 1 SERV — OM 100727767 (PM02)',done:false},
-      {eq:'Prensa de lodos 2',om:'100727770',desc:'LIMP 1S MOTOR TELAS P.LODO 2 SERV — OM 100727770 (PM02)',done:false},
-      {eq:'Prensa de lodos 3',om:'100727773',desc:'LIMP 1S MOTOR TELAS P.LODO 3 SERV — OM 100727773 (PM02)',done:false},
+      {eq:'PTAR',om:'100687310',desc:'INSP 2S CONTROL CARGAS MOTORES PTAR SERV — OM 100687310 (PM02)',done:false},
       {eq:'Servicios',om:'24610527',desc:'ACTIVIDADES TPM 1M - ELECTRICO SERVICIO — OM 24610527 (PM05)',done:false},
     ],
     2:[
-      {eq:'Sistema contraincendios',om:'100713018',desc:'INSP 1S ELEC SISTEMA CONTRAINCENDIOS — OM 100713018 (PM02)',done:false},
-      {eq:'Prensa de lodos 1',om:'100708669',desc:'INSP 1S PALETAS INF SUP P.LODOS 1 SERV — OM 100708669 (PM02)',done:false},
-      {eq:'Prensa de lodos 2',om:'100708695',desc:'INSP 1S PALETAS INF SUP P.LODOS 2 SERV — OM 100708695 (PM02)',done:false},
-      {eq:'Prensa de lodos 3',om:'100727773',desc:'LIMP 1S MOTOR TELAS P.LODO 3 SERV — OM 100727773 (PM02)',done:false},
+      {eq:'Prensa de lodos 1',om:'100708670',desc:'INSP 1S PALETAS INF SUP P.LODOS 1 SERV — OM 100708670 (PM02)',done:false},
+      {eq:'Prensa de lodos 2',om:'100708696',desc:'INSP 1S PALETAS INF SUP P.LODOS 2 SERV — OM 100708696 (PM02)',done:false},
+      {eq:'Prensa de lodos 3',om:'100708722',desc:'INSP 1S PALETAS INF SUP P.LODOS 3 SERV — OM 100708722 (PM02)',done:false},
+      {eq:'Prensa de lodos 1',om:'100732206',desc:'LIMP 1S MOTOR TELAS P.LODO 1 SERV — OM 100732206 (PM02)',done:false},
+      {eq:'Prensa de lodos 2',om:'100732208',desc:'LIMP 1S MOTOR TELAS P.LODO 2 SERV — OM 100732208 (PM02)',done:false},
+      {eq:'Prensa de lodos 3',om:'100732210',desc:'LIMP 1S MOTOR TELAS P.LODO 3 SERV — OM 100732210 (PM02)',done:false},
+      {eq:'Servicios',om:'24610527',desc:'REUNIÓN DE TARJETAS ROJA-PRODUCCIÓN — OM 24610527 (PM05)',done:false},
       {eq:'Servicios',om:'24610527',desc:'ACTIVIDADES TPM 1M - ELECTRICO SERVICIO — OM 24610527 (PM05)',done:false},
     ],
     3:[
-      {eq:'Compresor',om:'100738513',desc:'LIMP 1S DE SALA DE COMPRESORES — OM 100738513 (PM02)',done:false},
-      {eq:'Compresor',om:'100738564',desc:'LIMP 1S DE SALA DE COMPRESORES N°2 — OM 100738564 (PM02)',done:false},
-      {eq:'Compresor',om:'100738615',desc:'LIMP 1S DE SALA DE COMPRESORES N°3 — OM 100738615 (PM02)',done:false},
-      {eq:'Prensa de lodos 3',om:'100708721',desc:'INSP 1S PALETAS INF SUP P.LODOS 3 SERV — OM 100708721 (PM02)',done:false},
-      {eq:'Grupo electrógeno',om:'100728638',desc:'LIMP 1S EQUIPO Y PRUEBA ENCENDIDO GGEE — OM 100728638 (PM02)',done:false},
+      {eq:'Caldera 4',om:'100728326',desc:'MTTO 1M ELECTRICO CALDERA 4 SERV — OM 100728326 (PM02)',done:false},
+      {eq:'Caldera 4',om:'100728331',desc:'MTTO 1M TAB DIST/FUER/CTRL CALDERA 4 SER — OM 100728331 (PM02)',done:false},
+      {eq:'General / Planta',om:'100712274',desc:'PRUE 4M BOTONERA EMERG MOTORES K1 PP2 — OM 100712274 (PM02)',done:false},
+      {eq:'General / Planta',om:'100740106',desc:'TPMR CAMBIO DE TUBERIA MOTORES D TINA K4 — OM 100740106 (TR)',done:false},
+      {eq:'Caldera 4',om:'100735573',desc:'INSP 6M TAB DISTRIBUC/ALUMBRADO C4 SERV — OM 100735573 (PM02)',done:false},
+      {eq:'Caldera 4',om:'100735576',desc:'MTTO 6M TAB ABLAND/BBS DOSIFICAD C4 SERV — OM 100735576 (PM02)',done:false},
+      {eq:'Caldera 4',om:'100735579',desc:'MTTO 6M TABLERO DISTRIBUCIÓN C4 SERV — OM 100735579 (PM02)',done:false},
+      {eq:'Caldera 4',om:'100735588',desc:'MTTO 6M TABLERO MEDIDOR ENERGIA C4 SERV — OM 100735588 (PM02)',done:false},
+      {eq:'Caldera 4',om:'100735585',desc:'INSP 6M TAB CTRL PROCESOS BC3250 C4 SERV — OM 100735585 (PM02)',done:false},
+      {eq:'Caldera 4',om:'100735594',desc:'MTTO 6M TAB INTERRUPTOR CALDERA 04 SERV — OM 100735594 (PM02)',done:false},
       {eq:'Servicios',om:'24610527',desc:'ACTIVIDADES TPM 1M - ELECTRICO SERVICIO — OM 24610527 (PM05)',done:false},
     ],
     4:[
-      {eq:'General',om:'PM03',desc:'TPMR COLOCAR PULSADOR (OM INDICA MARITZA) — PM03',done:false},
-      {eq:'Bomba comedor',om:'100712762',desc:'INSP 1S ELEC BOMBA CENTRIFUGA 01 COMEDOR — OM 100712762 (PM02)',done:false},
-      {eq:'Bomba comedor',om:'100712787',desc:'INSP 1S ELEC BOMBA CENTRIFUGA 02 COMEDOR — OM 100712787 (PM02)',done:false},
+      {eq:'General / Planta',om:'100738661',desc:'LIMP 1S DE MOTORES ELECTRICOS DE K2 — OM 100738661 (PM02)',done:false},
+      {eq:'BBA 19A',om:'100708911',desc:'LIMP E INSP 1S DE MOTOR ELECTR BBA 19A — OM 100708911 (PM02)',done:false},
+      {eq:'BBA 19B',om:'100713607',desc:'LIMP E INSP 1S DE MOTOR ELECTR BBA 19B — OM 100713607 (PM02)',done:false},
+      {eq:'BBA 19C',om:'100713631',desc:'LIMP E INSP 1S DE MOTOR ELECTR BBA 19C — OM 100713631 (PM02)',done:false},
+      {eq:'BBA 320B',om:'100713652',desc:'LIMP E INSP 1S DE MOTOR ELECTR BBA 320B — OM 100713652 (PM02)',done:false},
+      {eq:'Grupo electrógeno',om:'100728639',desc:'LIMP 1S EQUIPO Y PRUEBA ENCENDIDO GGEE — OM 100728639 (PM02)',done:false},
+      {eq:'Bomba comedor',om:'100712763',desc:'INSP 1S ELEC BOMBA CENTRIFUGA 01 COMEDOR — OM 100712763 (PM02)',done:false},
+      {eq:'Bomba comedor',om:'100712788',desc:'INSP 1S ELEC BOMBA CENTRIFUGA 02 COMEDOR — OM 100712788 (PM02)',done:false},
       {eq:'Servicios',om:'24610527',desc:'ACTIVIDADES TPM 1M - ELECTRICO SERVICIO — OM 24610527 (PM05)',done:false},
     ]
   };
   document.getElementById('r-ini').value=semKey;
-  const vie=new Date('2026-05-11T12:00:00');vie.setDate(vie.getDate()+4);
-  document.getElementById('r-fin').value=fmtISO(vie);
-
-  // Vincular enlaces Drive a los respaldos de la semana
-  const driveLinks={'2026-05-11':'https://drive.google.com/drive/folders/1hViU35rtcC4DBY208ucqNdVwZTkI1pcN?usp=sharing','2026-05-12':'https://drive.google.com/drive/folders/1cMteRGj3nJtkg6rKAs92pF-ez05BUjTr?usp=sharing','2026-05-13':'https://drive.google.com/drive/folders/1rfjtRVDzcSHk_nbOzypnith53kViihE7?usp=sharing','2026-05-14':'https://drive.google.com/drive/folders/1jUkNH7Nw1RyRhjxiLMG--iCKihgLGTnu?usp=sharing','2026-05-15':'https://drive.google.com/drive/folders/1j4JOcJuUavQoHa-qUXZi_Gh3yWc718Pp?usp=sharing'};
-  Object.entries(driveLinks).forEach(([fecha,url])=>{
-    const entry=historial.find(h=>h.fecha===fecha);
-    if(entry)entry.driveUrl=url;
-  });
-
-  await apiCall({action:'saveRutina',data:rutina});
-  showToast('Rutina semana 11–15 May cargada ✓');
-  renderWeekPills();renderWeekContent();renderHoyProg();renderHist();
+  document.getElementById('r-fin').value='2026-05-15';
 }
 
-
-
-init().then(()=>preloadSemana());
+init();
 </script>
 </body>
 </html>
